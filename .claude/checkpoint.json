@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "last_session": "2026-05-11",
+  "current_goal": "G1",
+  "current_task": "T1",
+  "task_status": {
+    "T1": "todo",
+    "T2": "todo",
+    "T3": "todo",
+    "T4": "todo",
+    "T5": "todo",
+    "T6": "todo",
+    "T7": "todo",
+    "T8": "todo",
+    "T9": "todo",
+    "T10": "todo",
+    "T11": "todo",
+    "T12": "todo"
+  },
+  "next_action": "执行 T1: 初始化 Next.js 项目 + 安装依赖",
+  "last_checkpoint": "2026-05-11T18:30:00Z",
+  "pending_discovered": []
+}

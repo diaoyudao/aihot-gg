@@ -1,0 +1,189 @@
+{
+  "version": "1.0",
+  "project": "aihot-fork",
+  "initialized": true,
+  "goals": [
+    {
+      "id": "G1",
+      "title": "项目基础搭建",
+      "priority": 1,
+      "tasks": [
+        {
+          "id": "T1",
+          "title": "初始化 Next.js 项目 + 安装依赖",
+          "depends_on": [],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "create-next-app 成功，项目可运行", "passes": false, "evidence": ""},
+            {"step": "swr, next-themes, lucide-react 已安装", "passes": false, "evidence": ""},
+            {"step": "npm run dev 启动无报错", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T2",
+          "title": "类型定义 + API 客户端 + 工具函数",
+          "depends_on": ["T1"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "types.ts 包含 NewsItem, DailyReport, DailyArchive 等类型", "passes": false, "evidence": ""},
+            {"step": "api.ts 封装 4 个 API 端点，支持 NEXT_PUBLIC_API_BASE_URL", "passes": false, "evidence": ""},
+            {"step": "utils.ts 包含相对时间转换函数", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T3",
+          "title": "Tailwind 配置 + 深色模式 + 全局样式",
+          "depends_on": ["T1"],
+          "parallel_group": "G1-style",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Tailwind CSS v4 配置完成，深色模式 class 策略", "passes": false, "evidence": ""},
+            {"step": "globals.css 定义项目配色变量", "passes": false, "evidence": ""},
+            {"step": "深色/浅色模式可切换", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        }
+      ]
+    },
+    {
+      "id": "G2",
+      "title": "核心组件开发",
+      "priority": 2,
+      "tasks": [
+        {
+          "id": "T4",
+          "title": "根布局 layout.tsx + ThemeProvider",
+          "depends_on": ["T3"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 用户访问任意页面 When 页面加载 Then 显示导航栏和主题切换按钮", "passes": false, "evidence": ""},
+            {"step": "Given 用户点击主题切换 When 切换深色/浅色 Then 页面主题立即切换且持久化", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T5",
+          "title": "Navbar + MobileNav + ThemeToggle 组件",
+          "depends_on": ["T4"],
+          "parallel_group": "G2-nav",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 桌面端访问 When 页面加载 Then 显示水平导航栏含精选/全部/日报/关于链接", "passes": false, "evidence": ""},
+            {"step": "Given 移动端访问 When 点击菜单图标 Then 显示侧边导航抽屉", "passes": false, "evidence": ""},
+            {"step": "Given 当前路由为 /all When 导航栏渲染 Then '全部' 链接高亮", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T6",
+          "title": "NewsCard + RelativeTime 组件",
+          "depends_on": ["T2", "T3"],
+          "parallel_group": "G2-components",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 一条新闻数据 When 渲染 NewsCard Then 显示标题/来源/相对时间/摘要", "passes": false, "evidence": ""},
+            {"step": "Given 时间戳为 2 小时前 When 渲染 RelativeTime Then 显示 '2小时前'", "passes": false, "evidence": ""},
+            {"step": "Given 点击新闻卡片 When 新窗口打开 Then 跳转到原文链接", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T7",
+          "title": "CategoryFilter 组件",
+          "depends_on": ["T2", "T3"],
+          "parallel_group": "G2-components",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 5 个分类标签 When 渲染 Then 显示全部/模型/产品/行业/论文/技巧", "passes": false, "evidence": ""},
+            {"step": "Given 点击 '模型' 标签 When 切换分类 Then 高亮 '模型' 并触发筛选回调", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        }
+      ]
+    },
+    {
+      "id": "G3",
+      "title": "页面开发",
+      "priority": 3,
+      "tasks": [
+        {
+          "id": "T8",
+          "title": "首页：精选资讯 + 无限滚动",
+          "depends_on": ["T5", "T6", "T7"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 访问 / When 页面加载 Then 按分类分组显示精选资讯", "passes": false, "evidence": ""},
+            {"step": "Given 滚动到底部 When 触发无限加载 Then 加载下一页数据并追加", "passes": false, "evidence": ""},
+            {"step": "Given 无更多数据 When 滚动到底部 Then 显示 '已加载全部'", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T9",
+          "title": "全部资讯页：筛选 + 搜索 + 分页",
+          "depends_on": ["T8"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 访问 /all When 页面加载 Then 显示全部资讯条目", "passes": false, "evidence": ""},
+            {"step": "Given 选择 '产品' 分类 When 筛选 Then 仅显示 ai-products 类别", "passes": false, "evidence": ""},
+            {"step": "Given 输入搜索词 'OpenAI' When 提交搜索 Then 显示搜索结果", "passes": false, "evidence": ""},
+            {"step": "Given URL 参数 ?category=ai-models When 页面加载 Then 自动选中 '模型' 分类", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T10",
+          "title": "每日日报页 + 日报详情页",
+          "depends_on": ["T5", "T2"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 访问 /daily When 页面加载 Then 显示当日日报含 5 板块 + 快讯", "passes": false, "evidence": ""},
+            {"step": "Given 访问 /daily When 页面加载 Then 显示日报归档列表", "passes": false, "evidence": ""},
+            {"step": "Given 访问 /daily/2026-05-07 When 页面加载 Then 显示该日期日报内容", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        },
+        {
+          "id": "T11",
+          "title": "关于页 + 图片代理 API",
+          "depends_on": ["T5"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 访问 /about When 页面加载 Then 显示项目介绍和数据来源说明", "passes": false, "evidence": ""},
+            {"step": "Given 请求 /api/img-proxy?url=xxx When 代理请求 Then 返回图片数据", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        }
+      ]
+    },
+    {
+      "id": "G4",
+      "title": "收尾与部署",
+      "priority": 4,
+      "tasks": [
+        {
+          "id": "T12",
+          "title": "响应式适配 + 整体打磨",
+          "depends_on": ["T8", "T9", "T10", "T11"],
+          "parallel_group": "",
+          "kanban": "todo",
+          "acceptance": [
+            {"step": "Given 移动端访问 When 浏览各页面 Then 布局无溢出、导航可操作", "passes": false, "evidence": ""},
+            {"step": "Given npm run build When 构建项目 Then 无错误无警告", "passes": false, "evidence": ""}
+          ],
+          "completed_in": null
+        }
+      ]
+    }
+  ],
+  "discovered_tasks": []
+}
