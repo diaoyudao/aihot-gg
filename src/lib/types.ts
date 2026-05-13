@@ -21,12 +21,12 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   'tip': '技巧',
 };
 
-export const CATEGORY_COLORS: Record<Category, { bg: string; text: string; dot: string }> = {
-  'ai-models':   { bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-700 dark:text-orange-300',   dot: 'bg-orange-500' },
-  'ai-products': { bg: 'bg-lime-100 dark:bg-lime-900/30',      text: 'text-lime-700 dark:text-lime-300',       dot: 'bg-lime-500' },
-  'industry':    { bg: 'bg-amber-100 dark:bg-amber-900/30',    text: 'text-amber-700 dark:text-amber-300',     dot: 'bg-amber-500' },
-  'paper':       { bg: 'bg-rose-100 dark:bg-rose-900/30',      text: 'text-rose-700 dark:text-rose-300',       dot: 'bg-rose-500' },
-  'tip':         { bg: 'bg-teal-100 dark:bg-teal-900/30',      text: 'text-teal-700 dark:text-teal-300',       dot: 'bg-teal-500' },
+export const CATEGORY_COLORS: Record<Category, { cls: string }> = {
+  'ai-models':   { cls: 'cat-models' },
+  'ai-products': { cls: 'cat-products' },
+  'industry':    { cls: 'cat-industry' },
+  'paper':       { cls: 'cat-paper' },
+  'tip':         { cls: 'cat-tip' },
 };
 
 // 资讯列表响应

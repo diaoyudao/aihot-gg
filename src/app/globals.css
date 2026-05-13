@@ -344,7 +344,7 @@ body {
   overflow: hidden;
 }
 :root:not(.dark) .page-header {
-  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  background: linear-gradient(180deg, var(--bg-0), var(--bg-1));
   box-shadow: var(--shadow-card);
 }
 .page-header::before {
@@ -523,7 +523,7 @@ body {
   transform: translateY(-1px);
 }
 :root:not(.dark) .tl-card:hover {
-  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  background: linear-gradient(180deg, var(--bg-0), var(--bg-1));
   border-color: var(--border-emphasis);
   box-shadow: var(--shadow-card-hover);
 }
@@ -554,9 +554,9 @@ body {
   white-space: nowrap;
 }
 .tl-badge-selected {
-  border-color: rgba(251, 191, 36, 0.28);
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(251, 191, 36, 0.06));
-  color: #f5d27a;
+  border-color: rgba(var(--accent-rgb), 0.28);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.06));
+  color: var(--accent);
   font-size: 10.5px;
   padding: 3px 8px 3px 7px;
 }
@@ -737,9 +737,9 @@ body {
   --d-text-soft: #c7d0dc;
   --d-text-dim: #94a3b8;
   --d-text-faint: #64748b;
-  --d-accent: #34d399;
-  --d-accent-soft: rgba(52,211,153,0.65);
-  --d-accent-dim: rgba(52,211,153,0.18);
+  --d-accent: var(--accent);
+  --d-accent-soft: rgba(var(--accent-rgb), 0.65);
+  --d-accent-dim: rgba(var(--accent-rgb), 0.18);
   --d-rule: rgba(231,238,246,0.07);
   --d-rule-strong: rgba(231,238,246,0.14);
   --d-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -756,9 +756,9 @@ body {
   --d-text-soft: #3a3f4a;
   --d-text-dim: #6b7280;
   --d-text-faint: #94a3b8;
-  --d-accent: #059669;
-  --d-accent-soft: rgba(5,150,105,0.55);
-  --d-accent-dim: rgba(5,150,105,0.12);
+  --d-accent: var(--accent);
+  --d-accent-soft: rgba(var(--accent-rgb), 0.55);
+  --d-accent-dim: rgba(var(--accent-rgb), 0.12);
   --d-rule: rgba(26,29,35,0.10);
   --d-rule-strong: rgba(26,29,35,0.18);
 }
@@ -966,4 +966,51 @@ body {
   .daily-article-title { font-size: 16px; }
   .daily-article-summary { font-size: 14px; }
   .daily-masthead { margin-bottom: 32px; }
+}
+
+/* ─── Category colors (CSS-variable driven) ─── */
+.cat-models   { --cat-h: 24; --cat-s: 95%; --cat-l: 53%; }
+.cat-products { --cat-h: 83; --cat-s: 78%; --cat-l: 40%; }
+.cat-industry { --cat-h: 38; --cat-s: 92%; --cat-l: 50%; }
+.cat-paper    { --cat-h: 350; --cat-s: 89%; --cat-l: 60%; }
+.cat-tip      { --cat-h: 170; --cat-s: 76%; --cat-l: 36%; }
+
+.tl-dot.cat-models   { background: hsl(var(--cat-h), var(--cat-s), var(--cat-l)); }
+.tl-dot.cat-products { background: hsl(var(--cat-h), var(--cat-s), var(--cat-l)); }
+.tl-dot.cat-industry { background: hsl(var(--cat-h), var(--cat-s), var(--cat-l)); }
+.tl-dot.cat-paper    { background: hsl(var(--cat-h), var(--cat-s), var(--cat-l)); }
+.tl-dot.cat-tip      { background: hsl(var(--cat-h), var(--cat-s), var(--cat-l)); }
+
+.tl-badge-selected.cat-models,
+.tl-badge-selected.cat-products,
+.tl-badge-selected.cat-industry,
+.tl-badge-selected.cat-paper,
+.tl-badge-selected.cat-tip {
+  border-color: hsla(var(--cat-h), var(--cat-s), var(--cat-l), 0.35);
+  background: linear-gradient(135deg, hsla(var(--cat-h), var(--cat-s), var(--cat-l), 0.16), hsla(var(--cat-h), var(--cat-s), var(--cat-l), 0.06));
+  color: hsl(var(--cat-h), var(--cat-s), var(--cat-l));
+}
+.dark .tl-badge-selected.cat-models,
+.dark .tl-badge-selected.cat-products,
+.dark .tl-badge-selected.cat-industry,
+.dark .tl-badge-selected.cat-paper,
+.dark .tl-badge-selected.cat-tip {
+  color: hsl(var(--cat-h), var(--cat-s), calc(var(--cat-l) + 20%));
+}
+
+.tag.cat-models,
+.tag.cat-products,
+.tag.cat-industry,
+.tag.cat-paper,
+.tag.cat-tip {
+  background: hsla(var(--cat-h), var(--cat-s), var(--cat-l), 0.10);
+  color: hsl(var(--cat-h), var(--cat-s), var(--cat-l));
+}
+.dark .tag.cat-models,
+.dark .tag.cat-products,
+.dark .tag.cat-industry,
+.dark .tag.cat-paper,
+.dark .tag.cat-tip {
+  background: hsla(var(--cat-h), var(--cat-s), var(--cat-l), 0.14);
+  color: hsl(var(--cat-h), var(--cat-s), calc(var(--cat-l) + 18%));
 }

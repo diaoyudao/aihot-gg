@@ -36,7 +36,7 @@ export default function NewsCard({ item, index }: { item: NewsItem; index?: numb
 
       {/* Rail + Dot */}
       <div className="tl-rail">
-        <span className={`tl-dot ${cat && color?.dot ? '' : ''}`} style={cat && color?.dot ? {} : { background: 'var(--text-2)' }} />
+        <span className={`tl-dot ${cat && color ? `tl-dot-${color.cls}` : ''}`} />
       </div>
 
       {/* Card */}
@@ -51,7 +51,7 @@ export default function NewsCard({ item, index }: { item: NewsItem; index?: numb
         <div className="tl-card-head">
           <div className="tl-head-left">
             {cat && (
-              <span className={`tl-badge tl-badge-selected`}>
+              <span className={`tl-badge tl-badge-selected ${color?.cls}`}>
                 {CATEGORY_LABELS[cat]}
               </span>
             )}
@@ -107,7 +107,7 @@ export default function NewsCard({ item, index }: { item: NewsItem; index?: numb
         {/* Tags */}
         {cat && (
           <div className="tl-tags">
-            <span className="tag">{CATEGORY_LABELS[cat]}</span>
+            <span className={`tag ${color?.cls}`}>{CATEGORY_LABELS[cat]}</span>
           </div>
         )}
       </article>
