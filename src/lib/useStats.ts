@@ -1,7 +1,6 @@
 import useSWR from 'swr';
 import { swrFetcher } from '@/lib/api';
 import type { NewsItem, ItemsResponse, DailiesResponse } from '@/lib/types';
-import { resolveSince } from '@/lib/utils';
 
 const CATEGORIES = ['ai-models', 'ai-products', 'industry', 'paper', 'tip'] as const;
 
@@ -51,31 +50,36 @@ export function aggregateBySource(items: NewsItem[], limit = 15): SourceRank[] {
     .slice(0, limit);
 }
 
-function statsURL(since: string): string {
-  const params = new URLSearchParams({ path: '/api/public/items', mode: 'all', since, take: '100' });
-  return `/api/proxy?${params}`;
+/** Filter items to last N days */
+function filterByDays(items: NewsItem[], days: number): NewsItem[] {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString();
+  return items.filter(item => item.publishedAt && item.publishedAt >= cutoffStr);
+}
+
+// Single shared fetch for all stats — mode=all, take=100 (max allowed)
+const STATS_URL = `/api/proxy?path=${encodeURIComponent('/api/public/items')}&mode=all&take=100`;
+
+function useAllItems() {
+  const { data, isLoading } = useSWR<ItemsResponse>(
+    'stats-all-items',
+    () => swrFetcher(STATS_URL),
+    { dedupingInterval: 300000 }
+  );
+  return { items: data?.items ?? [], isLoading };
 }
 
 export function useCategoryTrend(days: 7 | 30) {
-  const since = resolveSince(`now-${days}d`);
-  const { data, isLoading } = useSWR<ItemsResponse>(
-    `stats-trend-${days}`,
-    () => swrFetcher(statsURL(since)),
-    { dedupingInterval: 300000 }
-  );
-  const items = data?.items ?? [];
-  return { data: aggregateByDateCategory(items), isLoading };
+  const { items, isLoading } = useAllItems();
+  const filtered = filterByDays(items, days);
+  return { data: aggregateByDateCategory(filtered), isLoading };
 }
 
 export function useSourceRanking(days: 7 | 30 = 30) {
-  const since = resolveSince(`now-${days}d`);
-  const { data, isLoading } = useSWR<ItemsResponse>(
-    `stats-source-${days}`,
-    () => swrFetcher(statsURL(since)),
-    { dedupingInterval: 300000 }
-  );
-  const items = data?.items ?? [];
-  return { data: aggregateBySource(items), isLoading };
+  const { items, isLoading } = useAllItems();
+  const filtered = filterByDays(items, days);
+  return { data: aggregateBySource(filtered), isLoading };
 }
 
 export function useDailyStats() {
