@@ -3,19 +3,20 @@
 import type { DayCount } from '@/lib/useStats';
 
 export default function ActivityHeatmap({ data }: { data: DayCount[] }) {
-  const maxCount = Math.max(...data.map(d => d.count), 1);
   const today = new Date();
+  const reportDates = new Set(data.map(d => d.date));
+
   // Build 30-day grid ending today
-  const days: { date: string; count: number; label: string }[] = [];
+  const days: { date: string; hasReport: boolean; label: string }[] = [];
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().slice(0, 10);
-    const found = data.find(x => x.date === dateStr);
+    const has = reportDates.has(dateStr);
     days.push({
       date: dateStr,
-      count: found?.count ?? 0,
-      label: `${dateStr.slice(5)}: ${found?.count ?? 0} 篇`,
+      hasReport: has,
+      label: `${dateStr.slice(5)}: ${has ? '有日报' : '无'}`,
     });
   }
 
@@ -24,11 +25,10 @@ export default function ActivityHeatmap({ data }: { data: DayCount[] }) {
       <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-0)', marginBottom: 12 }}>活跃热力图</h3>
       <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
         {days.map(d => {
-          const intensity = d.count / maxCount;
           const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-          const bg = d.count === 0
-            ? (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')
-            : `rgba(var(--accent-rgb), ${0.15 + intensity * 0.6})`;
+          const bg = d.hasReport
+            ? `rgba(var(--accent-rgb), 0.6)`
+            : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)');
           return (
             <div
               key={d.date}
@@ -42,7 +42,7 @@ export default function ActivityHeatmap({ data }: { data: DayCount[] }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 9,
-                color: 'var(--text-2)',
+                color: d.hasReport ? 'var(--accent)' : 'var(--text-2)',
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
