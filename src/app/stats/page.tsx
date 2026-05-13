@@ -11,10 +11,10 @@ export default function StatsPage() {
   const [days, setDays] = useState<7 | 30>(7);
 
   const { data: trendData, isLoading: trendLoading } = useCategoryTrend(days);
-  const { data: sourceData, isLoading: sourceLoading } = useSourceRanking(30);
+  const { data: sourceData, isLoading: sourceLoading } = useSourceRanking(days);
   const { data: dailyData, isLoading: dailyLoading } = useDailyStats();
 
-  const isLoading = trendLoading && sourceLoading && dailyLoading;
+  const anyLoading = !trendData.length && (trendLoading || sourceLoading || dailyLoading);
 
   return (
     <div className="page-enter" style={{ display: 'grid', gap: '12px', alignContent: 'start' }}>
@@ -42,7 +42,7 @@ export default function StatsPage() {
       </section>
 
       {/* Charts */}
-      {isLoading ? (
+      {anyLoading ? (
         <div className="space-y-3">
           <div className="skeleton h-48" />
           <div className="skeleton h-48" />

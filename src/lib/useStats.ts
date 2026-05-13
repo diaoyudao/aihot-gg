@@ -90,7 +90,7 @@ export function useCategoryTrend(days: 7 | 30) {
   return { data: aggregateByDateCategory(items), isLoading };
 }
 
-export function useSourceRanking(days: 30) {
+export function useSourceRanking(days: 7 | 30 = 30) {
   const since = resolveSince(`now-${days}d`);
   const { items, isLoading } = usePaginatedItems(since);
   return { data: aggregateBySource(items), isLoading };
