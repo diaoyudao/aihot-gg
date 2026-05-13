@@ -1,6 +1,4 @@
-import useSWRInfinite from 'swr/infinite';
 import useSWR from 'swr';
-import { useEffect } from 'react';
 import { swrFetcher } from '@/lib/api';
 import type { NewsItem, ItemsResponse, DailiesResponse } from '@/lib/types';
 import { resolveSince } from '@/lib/utils';
@@ -53,46 +51,30 @@ export function aggregateBySource(items: NewsItem[], limit = 15): SourceRank[] {
     .slice(0, limit);
 }
 
-function itemsURL(since: string, cursor?: string): string {
+function statsURL(since: string): string {
   const params = new URLSearchParams({ path: '/api/public/items', mode: 'all', since, take: '100' });
-  if (cursor) params.set('cursor', cursor);
   return `/api/proxy?${params}`;
-}
-
-const MAX_PAGES = 3;
-
-function usePaginatedItems(since: string) {
-  const swr = useSWRInfinite<ItemsResponse>(
-    (pageIndex, prevPage) => {
-      if (prevPage && !prevPage.hasNext) return null;
-      if (pageIndex >= MAX_PAGES) return null;
-      const cursor = pageIndex > 0 && prevPage?.nextCursor ? prevPage.nextCursor : undefined;
-      return itemsURL(since, cursor);
-    },
-    swrFetcher,
-    { dedupingInterval: 300000, revalidateFirstPage: false }
-  );
-
-  // Auto-fetch next page via useEffect (safe, no render-time side effect)
-  useEffect(() => {
-    if (swr.data && swr.size < MAX_PAGES && swr.data[swr.data.length - 1]?.hasNext) {
-      swr.setSize(swr.size + 1);
-    }
-  }, [swr.data, swr.size, swr.setSize]);
-
-  const items = swr.data ? swr.data.flatMap(page => page?.items ?? []) : [];
-  return { items, isLoading: swr.isLoading || swr.isValidating };
 }
 
 export function useCategoryTrend(days: 7 | 30) {
   const since = resolveSince(`now-${days}d`);
-  const { items, isLoading } = usePaginatedItems(since);
+  const { data, isLoading } = useSWR<ItemsResponse>(
+    `stats-trend-${days}`,
+    () => swrFetcher(statsURL(since)),
+    { dedupingInterval: 300000 }
+  );
+  const items = data?.items ?? [];
   return { data: aggregateByDateCategory(items), isLoading };
 }
 
 export function useSourceRanking(days: 7 | 30 = 30) {
   const since = resolveSince(`now-${days}d`);
-  const { items, isLoading } = usePaginatedItems(since);
+  const { data, isLoading } = useSWR<ItemsResponse>(
+    `stats-source-${days}`,
+    () => swrFetcher(statsURL(since)),
+    { dedupingInterval: 300000 }
+  );
+  const items = data?.items ?? [];
   return { data: aggregateBySource(items), isLoading };
 }
 
