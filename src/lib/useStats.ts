@@ -1,5 +1,6 @@
 import useSWRInfinite from 'swr/infinite';
 import useSWR from 'swr';
+import { useEffect } from 'react';
 import { swrFetcher } from '@/lib/api';
 import type { NewsItem, ItemsResponse, DailiesResponse } from '@/lib/types';
 import { resolveSince } from '@/lib/utils';
@@ -25,10 +26,8 @@ export interface DayCount {
   hasReport: boolean;
 }
 
-/** Aggregate items by date + category. Pure function. */
 export function aggregateByDateCategory(items: NewsItem[]): TrendRow[] {
   const map = new Map<string, TrendRow>();
-
   for (const item of items) {
     if (!item.publishedAt || !item.category) continue;
     const date = item.publishedAt.slice(0, 10);
@@ -40,16 +39,13 @@ export function aggregateByDateCategory(items: NewsItem[]): TrendRow[] {
       row[item.category] += 1;
     }
   }
-
   return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-/** Aggregate items by source count. Pure function. */
 export function aggregateBySource(items: NewsItem[], limit = 15): SourceRank[] {
   const map = new Map<string, number>();
   for (const item of items) {
-    const name = item.source;
-    map.set(name, (map.get(name) ?? 0) + 1);
+    map.set(item.source, (map.get(item.source) ?? 0) + 1);
   }
   return Array.from(map.entries())
     .map(([name, count]) => ({ name, count }))
@@ -57,76 +53,55 @@ export function aggregateBySource(items: NewsItem[], limit = 15): SourceRank[] {
     .slice(0, limit);
 }
 
-/** Build proxy URL for items API */
-function itemsProxyURL(params: Record<string, string | number | undefined>): string {
-  const qs = Object.entries(params)
-    .filter(([, v]) => v !== undefined && v !== '')
-    .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
-    .join('&');
-  return `/api/proxy?path=${encodeURIComponent('/api/public/items')}&${qs}`;
+function itemsURL(since: string, cursor?: string): string {
+  const params = new URLSearchParams({ path: '/api/public/items', mode: 'all', since, take: '100' });
+  if (cursor) params.set('cursor', cursor);
+  return `/api/proxy?${params}`;
 }
 
-/** Hook: category trend over N days (paginated fetch, up to 300 items) */
+const MAX_PAGES = 3;
+
+function usePaginatedItems(since: string) {
+  const swr = useSWRInfinite<ItemsResponse>(
+    (pageIndex, prevPage) => {
+      if (prevPage && !prevPage.hasNext) return null;
+      if (pageIndex >= MAX_PAGES) return null;
+      const cursor = pageIndex > 0 && prevPage?.nextCursor ? prevPage.nextCursor : undefined;
+      return itemsURL(since, cursor);
+    },
+    swrFetcher,
+    { dedupingInterval: 300000, revalidateFirstPage: false }
+  );
+
+  // Auto-fetch next page via useEffect (safe, no render-time side effect)
+  useEffect(() => {
+    if (swr.data && swr.size < MAX_PAGES && swr.data[swr.data.length - 1]?.hasNext) {
+      swr.setSize(swr.size + 1);
+    }
+  }, [swr.data, swr.size, swr.setSize]);
+
+  const items = swr.data ? swr.data.flatMap(page => page?.items ?? []) : [];
+  return { items, isLoading: swr.isLoading || swr.isValidating };
+}
+
 export function useCategoryTrend(days: 7 | 30) {
   const since = resolveSince(`now-${days}d`);
-
-  const { data, size, setSize, isLoading, isValidating } = useSWRInfinite<ItemsResponse>(
-    (pageIndex, prevPage) => {
-      if (prevPage && !prevPage.hasNext) return null;
-      if (pageIndex >= 3) return null; // max 3 pages = 300 items
-      const cursor = pageIndex > 0 && prevPage?.nextCursor ? prevPage.nextCursor : undefined;
-      return itemsProxyURL({ mode: 'all', since, take: 100, cursor });
-    },
-    swrFetcher,
-    { dedupingInterval: 300000, revalidateFirstPage: false }
-  );
-
-  // Auto-fetch next pages
-  if (data && size < 3 && data[data.length - 1]?.hasNext) {
-    setSize(size + 1);
-  }
-
-  const items = data ? data.flatMap(page => page?.items ?? []) : [];
-  return {
-    data: aggregateByDateCategory(items),
-    isLoading: isLoading || isValidating,
-  };
+  const { items, isLoading } = usePaginatedItems(since);
+  return { data: aggregateByDateCategory(items), isLoading };
 }
 
-/** Hook: source ranking (paginated fetch, up to 300 items) */
 export function useSourceRanking(days: 30) {
   const since = resolveSince(`now-${days}d`);
-
-  const { data, size, setSize, isLoading, isValidating } = useSWRInfinite<ItemsResponse>(
-    (pageIndex, prevPage) => {
-      if (prevPage && !prevPage.hasNext) return null;
-      if (pageIndex >= 3) return null;
-      const cursor = pageIndex > 0 && prevPage?.nextCursor ? prevPage.nextCursor : undefined;
-      return itemsProxyURL({ mode: 'all', since, take: 100, cursor });
-    },
-    swrFetcher,
-    { dedupingInterval: 300000, revalidateFirstPage: false }
-  );
-
-  if (data && size < 3 && data[data.length - 1]?.hasNext) {
-    setSize(size + 1);
-  }
-
-  const items = data ? data.flatMap(page => page?.items ?? []) : [];
-  return {
-    data: aggregateBySource(items),
-    isLoading: isLoading || isValidating,
-  };
+  const { items, isLoading } = usePaginatedItems(since);
+  return { data: aggregateBySource(items), isLoading };
 }
 
-/** Hook: daily archive stats */
 export function useDailyStats() {
   const { data, isLoading } = useSWR<DailiesResponse>(
     `/api/proxy?path=${encodeURIComponent('/api/public/dailies')}&take=30`,
     swrFetcher,
     { dedupingInterval: 300000 }
   );
-
   const items = data?.items ?? [];
   const dayCounts: DayCount[] = items.map(d => ({ date: d.date, hasReport: true }));
   return { data: dayCounts, isLoading, raw: items };
