@@ -1,4 +1,5 @@
 import type { DailyReport as DailyReportType } from '@/lib/types';
+import DailySectionBars from './DailySectionBars';
 
 function formatChineseDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -35,6 +36,9 @@ export default function DailyReport({ report }: { report: DailyReportType }) {
           <p className="daily-lead-text">{report.lead.leadParagraph}</p>
         </div>
       )}
+
+      {/* Section bars */}
+      {report.sections.length > 0 && <DailySectionBars sections={report.sections} />}
 
       {/* Sections */}
       <div>

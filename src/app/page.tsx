@@ -6,6 +6,7 @@ import type { ItemsResponse, Category } from '@/lib/types';
 import { buildItemsURL } from '@/lib/utils';
 import NewsCard, { NewsCardSkeleton } from '@/components/NewsCard';
 import CategoryFilter from '@/components/CategoryFilter';
+import CategoryPillBar from '@/components/CategoryPillBar';
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Empty } from '@phosphor-icons/react';
@@ -58,6 +59,7 @@ export default function HomePage() {
         <hr className="page-divider" />
         <div className="page-header-body">
           <CategoryFilter selected={category} onChange={setCategory} />
+          {items.length > 0 && <CategoryPillBar items={items} />}
         </div>
       </section>
 

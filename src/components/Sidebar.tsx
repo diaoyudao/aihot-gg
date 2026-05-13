@@ -9,6 +9,7 @@ import {
   Lightning,
   ListDashes,
   Newspaper,
+  ChartBar,
   Info,
   List,
   X,
@@ -18,6 +19,7 @@ const NAV_LINKS = [
   { href: '/', label: '精选', icon: Lightning },
   { href: '/all', label: '全部 AI 动态', icon: ListDashes },
   { href: '/daily', label: 'AI 日报', icon: Newspaper },
+  { href: '/stats', label: '数据洞察', icon: ChartBar },
   { href: '/about', label: '关于', icon: Info },
 ];
 
