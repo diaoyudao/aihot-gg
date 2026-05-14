@@ -14,7 +14,7 @@ export default function StatsPage() {
   const { data: sourceData, isLoading: sourceLoading } = useSourceRanking(days);
   const { data: dailyData, isLoading: dailyLoading } = useDailyStats();
 
-  const anyLoading = !trendData.length && (trendLoading || sourceLoading || dailyLoading);
+  const anyLoading = trendLoading && sourceLoading && dailyLoading;
 
   return (
     <div className="page-enter" style={{ display: 'grid', gap: '12px', alignContent: 'start' }}>
@@ -41,27 +41,26 @@ export default function StatsPage() {
         </div>
       </section>
 
-      {/* Charts */}
-      {anyLoading ? (
-        <div className="space-y-3">
-          <div className="skeleton h-48" />
-          <div className="skeleton h-48" />
-        </div>
-      ) : (
-        <>
-          {/* Row 1: Pie + Trend */}
-          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 12 }}>
-            <CategoryPie data={trendData} />
-            <CategoryTrend data={trendData} />
+      {/* Row 1: Pie + Trend — always mounted so Recharts can measure */}
+      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 12, position: 'relative', minHeight: 240 }}>
+        {anyLoading && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 2, display: 'grid', gap: 12, gridTemplateColumns: '240px 1fr' }}>
+            <div className="skeleton h-60" />
+            <div className="skeleton h-60" />
           </div>
+        )}
+        <CategoryPie data={trendData} />
+        <CategoryTrend data={trendData} />
+      </div>
 
-          {/* Row 2: Source ranking */}
-          <SourceRank data={sourceData} />
+      {/* Row 2: Source ranking */}
+      <div style={{ position: 'relative', minHeight: 200 }}>
+        {anyLoading && <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}><div className="skeleton h-52" /></div>}
+        <SourceRank data={sourceData} />
+      </div>
 
-          {/* Row 3: Heatmap */}
-          <ActivityHeatmap data={dailyData} />
-        </>
-      )}
+      {/* Row 3: Heatmap */}
+      <ActivityHeatmap data={dailyData} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useState, useEffect, useRef } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import type { TrendRow } from '@/lib/useStats';
 import { CATEGORY_LABELS } from '@/lib/types';
 import type { Category } from '@/lib/types';
@@ -15,6 +16,20 @@ function getColors(): string[] {
 }
 
 export default function CategoryTrend({ data }: { data: TrendRow[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    const obs = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setSize({ w: Math.round(width), h: Math.round(height) });
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const colors = getColors();
   const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
   const axisColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
@@ -22,9 +37,9 @@ export default function CategoryTrend({ data }: { data: TrendRow[] }) {
 
   return (
     <div className="tl-card" style={{ padding: 20 }}>
-      <div style={{ width: '100%', height: 240 }}>
-        <ResponsiveContainer>
-          <LineChart data={data} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
+      <div ref={ref} style={{ width: '100%', height: 240 }}>
+        {size && (
+          <LineChart width={size.w} height={size.h} data={data} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={axisColor} />
             <XAxis dataKey="date" tick={{ fontSize: 10, fill: tickColor }} tickFormatter={(v: string) => v.slice(5)} />
             <YAxis tick={{ fontSize: 10, fill: tickColor }} width={28} allowDecimals={false} />
@@ -33,7 +48,7 @@ export default function CategoryTrend({ data }: { data: TrendRow[] }) {
               <Line key={key} type="monotone" dataKey={key} name={CATEGORY_LABELS[key]} stroke={colors[i]} strokeWidth={2} dot={{ r: 3 }} />
             ))}
           </LineChart>
-        </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

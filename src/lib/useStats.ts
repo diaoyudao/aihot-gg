@@ -50,34 +50,52 @@ export function aggregateBySource(items: NewsItem[], limit = 15): SourceRank[] {
     .slice(0, limit);
 }
 
-/** Filter items to last N days */
 function filterByDays(items: NewsItem[], days: number): NewsItem[] {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
+  cutoff.setHours(0, 0, 0, 0);
   const cutoffStr = cutoff.toISOString();
   return items.filter(item => item.publishedAt && item.publishedAt >= cutoffStr);
 }
 
-// Single shared fetch for all stats — mode=all, take=100 (max allowed)
-const STATS_URL = `/api/proxy?path=${encodeURIComponent('/api/public/items')}&mode=all&take=100`;
+// Fetch multiple pages and merge
+async function fetchPages(take: number): Promise<NewsItem[]> {
+  const allItems: NewsItem[] = [];
+  let cursor: string | undefined;
 
-function useAllItems() {
-  const { data, isLoading } = useSWR<ItemsResponse>(
-    'stats-all-items',
-    () => swrFetcher(STATS_URL),
+  for (let page = 0; page < 3; page++) {
+    const params = new URLSearchParams({
+      path: '/api/public/items', mode: 'selected', take: String(take),
+    });
+    if (cursor) params.set('cursor', cursor);
+    const url = `/api/proxy?${params}`;
+    const res = await fetch(url);
+    if (!res.ok) break;
+    const data: ItemsResponse = await res.json();
+    allItems.push(...(data.items ?? []));
+    if (!data.hasNext || !data.nextCursor) break;
+    cursor = data.nextCursor;
+  }
+  return allItems;
+}
+
+function useAllSelectedItems() {
+  const { data, isLoading } = useSWR<NewsItem[]>(
+    'stats-selected-items',
+    () => fetchPages(100),
     { dedupingInterval: 300000 }
   );
-  return { items: data?.items ?? [], isLoading };
+  return { items: data ?? [], isLoading };
 }
 
 export function useCategoryTrend(days: 7 | 30) {
-  const { items, isLoading } = useAllItems();
+  const { items, isLoading } = useAllSelectedItems();
   const filtered = filterByDays(items, days);
   return { data: aggregateByDateCategory(filtered), isLoading };
 }
 
 export function useSourceRanking(days: 7 | 30 = 30) {
-  const { items, isLoading } = useAllItems();
+  const { items, isLoading } = useAllSelectedItems();
   const filtered = filterByDays(items, days);
   return { data: aggregateBySource(filtered), isLoading };
 }
